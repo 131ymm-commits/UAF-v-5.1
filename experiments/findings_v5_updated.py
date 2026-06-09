@@ -142,16 +142,69 @@ if __name__ == "__main__":
          "OPEN: зависит от alpha и decay"),
         ("Q7",  "novelty_adaptive: когда включать и с каким порогом застоя",
          "OPEN: нужен sweep застой vs качество"),
+        ("Q_GL1", "N_v ~ H·L²/(2π) — квантование потока",
+         "OPEN: EXP-UAF-GL-002"),
+        ("Q_GL2", "Δȳ(t) — степенной закон или экспоненциальный?",
+         "OPEN: EXP-UAF-GL-003"),
+        ("Q_GL3", "Связь вихревой решётки и SIS/SIR на scale-free",
+         "OPEN: мост к Q5"),
     ]
     for q, title, note in questions:
         status = "✓ ЗАКРЫТ" if "ЗАКРЫТ" in note else "→ OPEN"
         print(f"\n  [{q}] {status} — {title}")
         print(f"       {note}")
 
+    # ── EXP-UAF-GL-001: GL Hybrid ────────────────────────────────
+    print_section("EXP-UAF-GL-001: UAF+GL Hybrid — вихри Абрикосова + Magnus/Hall")
+    print(f"""
+  Модель: TDGL + Particle-Tracker (гибрид)
+  ─────────────────────────────────────────
+  Слой 1 — TDGL:  (1+iη)·dψ/dt = -(α+β|ψ|²)ψ + γ·D²ψ + шум
+    Калибровка Ландау: D_y = ∂_y − iHx
+    Открытые границы: нуклеация вихрей (y=0), поглощение (y=L)
+
+  Слой 2 — Частицы:  v_i = μ·(F_Magnus + F_vv + F_pin) + шум
+    Magnus: F = q_i·B_z·(−J_y, J_x)
+    Обратная связь: позиции вихрей → подавляют |ψ| в ядрах
+
+  Параметры: α=−0.55, β=0.55, γ=0.35, H=0.45, η=0.50
+             J_tr=(0.80,0), B_z=0.45, N_vortex=44, L=96
+
+  Результаты (25k шагов):
+  ┌─────────────────────────────────────────────────┐
+  │  TDGL конденсат:                                │
+  │    mean|ψ| = 0.923  (теор=1.0)   ✓ стабилен   │
+  │    std|ψ|  = 0.156               ✓ гетероген.  │
+  │    N вихрей = 38–44              ✓ flux flow   │
+  │                                                  │
+  │  Разделение зарядов:                            │
+  │    Δȳ (Hall-эффект)   = 30.6 px  ✓✓ VERIFIED  │
+  │    |Δx̄| (Magnus)     =  7.7 px  △  слабый     │
+  │    Тренд: +0.84 px / 1000 шагов                │
+  │    Насыщение: ~50k шагов (Δȳ → L/2 = 48px)    │
+  └─────────────────────────────────────────────────┘
+
+  UAF-маппинг:
+    |ψ|²        ↔  A_i  (плотность конденсата = активация)
+    std|ψ|      ↔  гетерогенность UAF-сети
+    ядро вихря  ↔  A_i→0 (спайк ошибки предсказания)
+    Hall-дрейф  ↔  топологический заряд при асимм. динамике
+
+  Открытые вопросы:
+    Q_GL1: N_v ~ H·L²/(2π)?          [→ EXP-UAF-GL-002]
+    Q_GL2: Δȳ(t) — степенной закон?  [→ EXP-UAF-GL-003]
+    Q_GL3: связь вихревой решётки и SIS на scale-free (UAF Q5)
+
+  Статус: VERIFIED ✓
+  Файлы:  experiments/uaf_gl_hybrid_v5.1.py
+          experiments/exp_uaf_gl_hybrid.py
+    """)
+
     print(f"\n{'═'*60}")
     print(f"  → Следующий эксперимент (EXP 032):")
     print(f"    Водораздел в (H,L)-пространстве как изокривая.")
     print(f"    + Sweep fire_intensity × novelty_rate → оптимальный режим CPS.")
+    print(f"    + EXP-UAF-GL-002: проверка N_v ~ H·L²/(2π)")
     print(f"{'═'*60}\n")
 
 
@@ -240,7 +293,10 @@ def new_findings_from_drive():
     print("  → Новые файлы:")
     print("    experiments/benchmark_uaf_agent.py")
     print("    experiments/axioms_uaf.py")
+    print("    experiments/uaf_gl_hybrid_v5.1.py")
+    print("    experiments/exp_uaf_gl_hybrid.py")
     print("    docs/UHF_meson_constants.md")
+    print("    docs/uaf_gl_hybrid_30k.png")
     print("═"*62)
 
 
