@@ -30,22 +30,21 @@ import warnings
 def rhs(A, alpha_s=0.06, C_mean=1.0, alpha_l=0.01, Pi=1.0,
         delta=0.01, f=0.0, A_c=1.0):
     """
-    Mean-field 1D RHS:
-        dA/dτ = β·A²·(1−A) + α_l·Π·A·(1−A) + f·(1−A/A_c) − δ·(1−0.3·A)
-
-    Notes:
-        TSV term: α_s · C_mean · A · (1−A) ← linear in A (wrong for mean-field)
-        Correct mean-field TSV: α_s · C_mean · A² · (1−A)  [A acts as both
-        source strength and fraction available]
-
-        FEP term collapsed to α_l·Π·A·(1−A) under PE_i = A_i approximation.
+    Mean-field 1D RHS with natural boundary enforcement.
+    At A=0: only floor can drive it up; at A=1: only decay drives down.
+    The multiplicative (1−A) and f·(1−A/A_c) terms handle this naturally,
+    but clamp A to [1e-9, 1−1e-9] to prevent numerical blowup.
     """
+    A = np.asarray(A, dtype=float)
+    scalar = A.ndim == 0
+    A = np.clip(A, 1e-9, 1 - 1e-9)
     beta = alpha_s * C_mean
     tsv  = beta * A**2 * (1 - A)
     fep  = alpha_l * Pi * A * (1 - A)
     floor_term = f * (1 - A / A_c)
     decay = delta * (1 - 0.3 * A)
-    return tsv + fep + floor_term - decay
+    result = tsv + fep + floor_term - decay
+    return float(result) if scalar else result
 
 
 def rhs_deriv(A, **kwargs):
